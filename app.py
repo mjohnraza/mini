@@ -4,8 +4,13 @@ Interactive text generation and model analysis demo.
 """
 
 import os
-import torch
 import gradio as gr
+
+try:
+    import spaces
+    has_spaces = True
+except ImportError:
+    has_spaces = False
 
 from src.gpt import MiniGPT
 from src.tokenizer import CharTokenizer
@@ -34,7 +39,7 @@ model.eval()
 
 num_params = sum(p.numel() for p in model.parameters())
 
-def generate_text(prompt: str, max_tokens: int, temperature: float, top_k: int):
+def _generate(prompt: str, max_tokens: int, temperature: float, top_k: int):
     if not prompt or len(prompt.strip()) == 0:
         return "Please enter a non-empty starting prompt."
     
@@ -51,6 +56,11 @@ def generate_text(prompt: str, max_tokens: int, temperature: float, top_k: int):
     
     generated_text = tokenizer.decode(out_indices[0].tolist())
     return generated_text
+
+if has_spaces:
+    generate_text = spaces.GPU(_generate)
+else:
+    generate_text = _generate
 
 custom_css = """
 .gradio-container {
