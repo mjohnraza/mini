@@ -7,13 +7,13 @@ sdk: gradio
 sdk_version: 6.30.0
 app_file: app.py
 pinned: false
----
-
+---**
+**
 Team members 
 23k0069 John Raza
 23i2555 Zoha 
 23k0071 Urooj
-
+****************
 # MiniGPT: Transformer & Causal GPT From Scratch
 
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.5+-EE4C2C.svg)](https://pytorch.org/)
