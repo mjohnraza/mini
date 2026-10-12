@@ -1,3 +1,14 @@
+---
+title: MiniGPT Causal Transformer
+emoji: 🎭
+colorFrom: indigo
+colorTo: purple
+sdk: gradio
+sdk_version: 6.30.0
+app_file: app.py
+pinned: false
+---
+
 # MiniGPT: Transformer & Causal GPT From Scratch
 
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.5+-EE4C2C.svg)](https://pytorch.org/)
