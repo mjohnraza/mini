@@ -25,6 +25,74 @@ A complete, educational, and production-grade implementation of a miniature auto
 
 ## Architecture & Design
 
+```mermaid
+flowchart TD
+    subgraph Input["Input Processing"]
+        Tok[Input Tokens: B x T] --> Emb[Token Embedding: B x T x d_model]
+        Tok --> Pos[Positional Encoding: B x T x d_model]
+        Emb --> Add[Element-wise Sum + Dropout]
+        Pos --> Add
+    end
+
+    subgraph TransformerStack["Transformer Decoder (Repeated N times)"]
+        Add --> Block1[Transformer Block 1]
+        Block1 --> BlockN[Transformer Block N]
+        
+        subgraph BlockDetails["Inside Each Transformer Block"]
+            direction TB
+            InputX["Input Tensor: (B, T, d_model)"] --> LN1["LayerNorm 1 (Pre-LN)"]
+            LN1 --> MHA["Multi-Head Causal Attention\n(H Heads, Q/K/V Projections, Causal Mask)"]
+            MHA --> Add1["Residual Add (+)"]
+            InputX --> Add1
+            Add1 --> LN2["LayerNorm 2 (Pre-LN)"]
+            LN2 --> FFN["Feed-Forward MLP\n(Linear -> GELU -> Linear)"]
+            FFN --> Add2["Residual Add (+)"]
+            Add1 --> Add2
+            Add2 --> OutputX["Output Tensor: (B, T, d_model)"]
+        end
+    end
+
+    subgraph OutputHead["Language Model Head"]
+        BlockN --> FinalLN["Final LayerNorm"]
+        FinalLN --> LMHead["Linear Projection: d_model -> vocab_size"]
+        LMHead --> Logits["Logits: (B, T, vocab_size)"]
+        Logits --> Loss["Cross-Entropy Loss (Shifted Targets) / Softmax Sampling"]
+    end
+```
+
+### Text Architecture Overview
+
+```
+Input Tokens: (B, T)
+      │
+      ├──> Token Embedding: (B, T, d_model)
+      └──> Positional Encoding: (B, T, d_model)
+      │
+      ▼ (Sum + Dropout)
+      ┌──────────────────────────────────────────────────┐
+      │  Transformer Block (Repeated N=4 times)          │
+      │  ┌────────────────────────────────────────────┐  │
+      │  │ Input Tensor x                             │  │
+      │  │   │                                        │  │
+      │  │   ├──> LayerNorm 1 (Pre-LN)                │  │
+      │  │   │      └──> Multi-Head Causal Attention   │  │
+      │  │   ▼             (4 Heads, causal mask)     │  │
+      │  │  (+) Residual Add <────────────────────────┘  │
+      │  │   │                                           │
+      │  │   ├──> LayerNorm 2 (Pre-LN)                   │
+      │  │   │      └──> Feed-Forward MLP (GELU)         │
+      │  │   ▼                                           │
+      │  │  (+) Residual Add <────────────────────────┘  │
+      │  └────────────────────────────────────────────┘  │
+      └──────────────────────────────────────────────────┘
+      │
+      ▼ Final LayerNorm
+      │
+      ▼ Linear Head (d_model -> vocab_size=65)
+      │
+    Logits: (B, T, vocab_size)
+```
+
 MiniGPT implements the complete modern Transformer decoder pipeline:
 - **Deterministic Character Tokenizer:** 65 unique vocabulary characters extracted from Tiny Shakespeare.
 - **Sinusoidal & Learned Positional Encoding:** Injects sequence order via geometric frequency waves ($PE(pos, 2i) = \sin(pos/10000^{2i/d})$).
@@ -89,8 +157,8 @@ transformer-gpt-assignment/
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/your-username/transformer-gpt-assignment.git
-cd transformer-gpt-assignment
+git clone https://github.com/mjohnraza/mini.git
+cd mini
 ```
 
 ### 2. Create and activate a virtual environment
