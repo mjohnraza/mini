@@ -7,30 +7,35 @@ sdk: gradio
 sdk_version: 6.30.0
 app_file: app.py
 pinned: false
----**
+---
 
 # MiniGPT: Transformer & Causal GPT From Scratch
 
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.5+-EE4C2C.svg)](https://pytorch.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688.svg)](https://fastapi.tiangolo.com/)
+[![Gradio](https://img.shields.io/badge/Gradio-6.30-orange.svg)](https://gradio.app/)
+[![HuggingFace Space](https://img.shields.io/badge/🤗%20Hugging%20Face-Space%20Live-yellow.svg)](https://huggingface.co/spaces/ffffdse/mini)
 [![Tests](https://img.shields.io/badge/Tests-8%20Passing-brightgreen.svg)]()
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)]()
 
 A complete, educational, and production-grade implementation of a miniature autoregressive causal Transformer language model (**MiniGPT**) built entirely from scratch using PyTorch primitives. No pretrained checkpoints (`AutoModelForCausalLM`, `GPT2LMHeadModel`) or black-box architectures are loaded.
 
-team members 
-
-23k0069 John
-23i2555 Zoha 
-23k00071  Urooj 
 ---
 
-live demos video link
-https://drive.google.com/file/d/1424XsC5sr9ogTGqLArs2wSZvw4TyRtnj/view?usp=sharing
+## 👥 Project Team
+* **23k0069** — Muhammad John Raza
+* **23i2555** — Zoha
+* **23k0071** — Urooj
 
-https://medium.com/@k230069/roi-of-training-an-llm-from-scratch-what-it-costs-and-where-fine-tuning-wins-c930b2fe1e29
+---
 
+## 🔗 Live Links & Artifacts
+* **🤗 Live Gradio Space Demo:** [huggingface.co/spaces/ffffdse/mini](https://huggingface.co/spaces/ffffdse/mini)
+* **🎥 Video Presentation Demo:** [Google Drive Video Demo](https://drive.google.com/file/d/1424XsC5sr9ogTGqLArs2wSZvw4TyRtnj/view?usp=sharing)
+* **📝 Published Technical Article & ROI Analysis:** [Medium: ROI of Training an LLM From Scratch: What It Costs and Where Fine-Tuning Wins](https://medium.com/@k230069/roi-of-training-an-llm-from-scratch-what-it-costs-and-where-fine-tuning-wins-c930b2fe1e29)
+* **💻 GitHub Repository:** [github.com/mjohnraza/mini](https://github.com/mjohnraza/mini)
 
+---
 
 ## 📖 Table of Contents
 1. [Architecture & Design](#architecture--design)
@@ -40,9 +45,10 @@ https://medium.com/@k230069/roi-of-training-an-llm-from-scratch-what-it-costs-an
 5. [Running Unit Tests](#running-unit-tests)
 6. [Training MiniGPT](#training-minigpt)
 7. [Inference (CLI & REST API)](#inference-cli--rest-api)
-8. [Experiments & Ablation Study](#experiments--ablation-study)
-9. [Hand Calculations Summary](#hand-calculations-summary)
-10. [Known Limitations & Failure Modes](#known-limitations--failure-modes)
+8. [Live Web App (Gradio)](#live-web-app-gradio)
+9. [Experiments & Ablation Study](#experiments--ablation-study)
+10. [Hand Calculations Summary](#hand-calculations-summary)
+11. [Known Limitations & Failure Modes](#known-limitations--failure-modes)
 
 ---
 
@@ -51,24 +57,24 @@ https://medium.com/@k230069/roi-of-training-an-llm-from-scratch-what-it-costs-an
 ```mermaid
 flowchart TD
     subgraph Input["Input Processing"]
-        Tok[Input Tokens: B x T] --> Emb[Token Embedding: B x T x d_model]
-        Tok --> Pos[Positional Encoding: B x T x d_model]
-        Emb --> Add[Element-wise Sum + Dropout]
+        Tok["Input Tokens: (B, T)"] --> Emb["Token Embedding: (B, T, d_model)"]
+        Tok --> Pos["Positional Encoding: (B, T, d_model)"]
+        Emb --> Add["Element-wise Sum + Dropout"]
         Pos --> Add
     end
 
-    subgraph TransformerStack["Transformer Decoder (Repeated N times)"]
-        Add --> Block1[Transformer Block 1]
-        Block1 --> BlockN[Transformer Block N]
+    subgraph TransformerStack["Transformer Decoder (Repeated N=4 times)"]
+        Add --> Block1["Transformer Block 1"]
+        Block1 --> BlockN["Transformer Block N (Pre-LN)"]
         
         subgraph BlockDetails["Inside Each Transformer Block"]
             direction TB
             InputX["Input Tensor: (B, T, d_model)"] --> LN1["LayerNorm 1 (Pre-LN)"]
-            LN1 --> MHA["Multi-Head Causal Attention\n(H Heads, Q/K/V Projections, Causal Mask)"]
+            LN1 --> MHA["Multi-Head Causal Attention\n(4 Heads, Q/K/V Projections, Causal Mask)"]
             MHA --> Add1["Residual Add (+)"]
             InputX --> Add1
             Add1 --> LN2["LayerNorm 2 (Pre-LN)"]
-            LN2 --> FFN["Feed-Forward MLP\n(Linear -> GELU -> Linear)"]
+            LN2 --> FFN["Feed-Forward MLP (GELU)\n(d_model -> 4*d_model -> d_model)"]
             FFN --> Add2["Residual Add (+)"]
             Add1 --> Add2
             Add2 --> OutputX["Output Tensor: (B, T, d_model)"]
@@ -77,9 +83,9 @@ flowchart TD
 
     subgraph OutputHead["Language Model Head"]
         BlockN --> FinalLN["Final LayerNorm"]
-        FinalLN --> LMHead["Linear Projection: d_model -> vocab_size"]
+        FinalLN --> LMHead["Linear Projection: (d_model -> vocab_size=65)"]
         LMHead --> Logits["Logits: (B, T, vocab_size)"]
-        Logits --> Loss["Cross-Entropy Loss (Shifted Targets) / Softmax Sampling"]
+        Logits --> Loss["Cross-Entropy Loss (Shifted Targets) / Autoregressive Sampling"]
     end
 ```
 
@@ -119,10 +125,10 @@ Input Tokens: (B, T)
 MiniGPT implements the complete modern Transformer decoder pipeline:
 - **Deterministic Character Tokenizer:** 65 unique vocabulary characters extracted from Tiny Shakespeare.
 - **Sinusoidal & Learned Positional Encoding:** Injects sequence order via geometric frequency waves ($PE(pos, 2i) = \sin(pos/10000^{2i/d})$).
-- **Multi-Head Self-Attention:** $H$ independent attention heads with explicit linear projections, scaled dot-product scores, and head concatenation.
+- **Multi-Head Self-Attention:** $H=4$ independent attention heads with explicit linear projections, scaled dot-product scores, and head concatenation.
 - **Strict Causal Masking:** Lower-triangular masking ensuring token $t$ never attends to tokens $> t$.
 - **Pre-LayerNorm & Residual Highways:** Stable gradient propagation during training from scratch.
-- **Position-wise FFN:** Two-layer projection with GELU non-linearity ($4 \times d_{\text{model}}$).
+- **Position-wise FFN:** Two-layer projection with GELU non-linearity ($4 \times d_{\text{model}} = 512$).
 - **Language Model Head:** Projects hidden representations back to vocabulary logits with optional weight tying.
 
 ---
@@ -130,10 +136,12 @@ MiniGPT implements the complete modern Transformer decoder pipeline:
 ## Starter Repository Structure
 
 ```
-transformer-gpt-assignment/
+mini/
 ├── README.md                           # Documentation, setup & commands
 ├── requirements.txt                    # Project dependencies
+├── app.py                              # Gradio web app for Hugging Face Spaces
 ├── conftest.py                         # Pytest environment configuration
+├── verify_submission.py                # Automated Section 16 Acceptance Test Suite
 ├── configs/
 │   └── tiny_gpt.yaml                   # Hyperparameter configuration
 ├── data/
@@ -160,18 +168,25 @@ transformer-gpt-assignment/
 │   ├── test_shapes.py                  # End-to-end tensor-shape tracing
 │   └── test_overfit.py                 # Tiny overfit sanity check
 ├── experiments/
-│   ├── attention_visualization.py      # Generates Figure 2 (causal mask) & Figure 7 (attention map)
-│   ├── ablation.py                     # Depth, heads, context, and positional ablations (Figure 9)
-│   └── evaluate.py                     # Model evaluation, perplexity, and parameter count (Figure 5 & 8)
+│   ├── attention_visualization.py      # Generates causal mask & attention map figures
+│   ├── ablation.py                     # Depth, heads, context, and positional ablations
+│   └── evaluate.py                     # Model evaluation, perplexity, and parameter count
 ├── outputs/
 │   ├── figures/                        # Generated figures (loss curve, attention, ablations)
 │   ├── logs/                           # Training logs
 │   └── samples/                        # Generated sample completions
 ├── checkpoints/
-│   ├── tiny_gpt_best.pt                # Trained model weights checkpoint
+│   ├── tiny_gpt_best.pt                # Trained model weights checkpoint (~9.97 MB)
 │   └── tokenizer.json                  # Persisted vocabulary mapping
+├── roi/
+│   ├── calculate_roi.py                # ROI & KV cache computation engine
+│   ├── plot_roi.py                     # Generates ROI, KV cache, and breakeven figures
+│   ├── roi_analysis.md                 # Full Return on Investment (ROI) Report
+│   └── figures/                        # Generated ROI charts
 └── report/
-    └── report.md                       # Full 8-12 page Technical Report (Medium Article)
+    ├── report.md                       # Full 8-12 page Technical Report (Medium Article)
+    ├── report.html                     # Compiled HTML format
+    └── conclusion.md                   # Detailed concluding analysis
 ```
 
 ---
@@ -216,7 +231,7 @@ Run the complete test suite to verify mathematical correctness, shapes, and caus
 ```bash
 python -m pytest -v
 ```
-All 8 tests will pass:
+All 8 tests pass cleanly:
 1. `test_hand_calculated_attention_step_by_step` (verifies Section 6 arithmetic against code)
 2. `test_self_attention_module` (verifies projection, softmax distribution sum = 1)
 3. `test_multi_head_attention` (verifies head split, concatenate, output shape)
@@ -225,6 +240,12 @@ All 8 tests will pass:
 6. `test_causal_gradient_isolation` (verifies zero gradient backpropagation from future tokens)
 7. `test_tiny_overfit_batch` (verifies loss reduction > 70% on repeated batch)
 8. `test_tensor_shape_trace_full_pipeline` (verifies all tensor transitions)
+
+### Section 16 Acceptance Test Suite
+To run all 7 assignment acceptance checks automatically:
+```bash
+python verify_submission.py
+```
 
 ---
 
@@ -274,6 +295,19 @@ curl -X POST "http://localhost:8000/generate" \
 
 ---
 
+## Live Web App (Gradio)
+
+Launch the interactive Gradio web application locally:
+```bash
+python app.py
+```
+Open your browser at `http://127.0.0.1:7860`.
+
+The app is also deployed live on Hugging Face Spaces:  
+👉 **[https://huggingface.co/spaces/ffffdse/mini](https://huggingface.co/spaces/ffffdse/mini)**
+
+---
+
 ## Experiments & Ablation Study
 
 Run the automated ablation experiments (Section 13):
@@ -295,7 +329,7 @@ python -m experiments.attention_visualization
 
 ## Hand Calculations Summary
 
-See [`report/report.md`](file:///c:/Users/exam.DESKTOP-LNCC6CA/Desktop/ai%20assignment/report/report.md#L20-L100) for complete step-by-step arithmetic:
+See [`report/report.md`](report/report.md) for complete step-by-step arithmetic:
 - **Explicit Matrices:** $Q \in \mathbb{R}^{3 \times 2}, K \in \mathbb{R}^{3 \times 2}, V \in \mathbb{R}^{3 \times 2}$
 - **Scaling:** $S = \frac{Q K^T}{\sqrt{2}}$
 - **Causal Mask:** $S_{\text{masked}} = S + (1 - M)(-\infty)$
