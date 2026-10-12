@@ -20,6 +20,13 @@ A complete, educational, and production-grade implementation of a miniature auto
 
 ---
 
+live demos video link
+https://drive.google.com/file/d/1424XsC5sr9ogTGqLArs2wSZvw4TyRtnj/view?usp=sharing
+
+https://medium.com/@k230069/roi-of-training-an-llm-from-scratch-what-it-costs-and-where-fine-tuning-wins-c930b2fe1e29
+
+
+
 ## 📖 Table of Contents
 1. [Architecture & Design](#architecture--design)
 2. [Starter Repository Structure](#starter-repository-structure)
