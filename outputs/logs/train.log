@@ -1,0 +1,7 @@
+MiniGPT Training Log | Parameters: 809,984 | Device: cpu
+Step	Train Loss	Val Loss	Time (s)
+200	2.3533	2.3538	75.0
+400	2.1064	2.1439	145.4
+600	1.9100	1.9971	215.8
+800	1.7830	1.9040	286.5
+1000	1.6821	1.8296	357.2

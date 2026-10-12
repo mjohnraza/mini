@@ -1,0 +1,35 @@
+=== MiniGPT Generated Samples ===
+Training Wall-Clock Time: 357.47s | Final Val Loss: 1.8296
+
+--- Prompt 1: 'ROMEO:\nWhat light through' ---
+ROMEO:
+What light throught the rosidery light prese,
+And neeers bething Cleare with away,
+Shall to so our do math a fither in
+
+--- Prompt 2: 'JULIET:\nO Romeo, Romeo!' ---
+JULIET:
+O Romeo, Romeo!
+
+CLUCES:
+Strain: it shird, That thou love me fall'd as your your crown.
+
+ELCUTER:
+Shiple pleary say
+
+--- Prompt 3: 'HAMLET:\nTo be, or not to be,' ---
+HAMLET:
+To be, or not to be, I it senough grower,
+Who sind, For him, am we to him all one thy
+As thing besent to hearth we thenc
+
+--- Prompt 4: 'The king doth wake' ---
+The king doth wake then faw shone;
+For By I have her there these man ploural this be
+What thou power all noother flose
+
+--- Prompt 5: 'What is the cause of' ---
+What is the cause of of the should
+To stresiencedion the are dare of the tenders,
+Whoses's thim to all poctierman: trow 
+
