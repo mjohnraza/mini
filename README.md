@@ -26,6 +26,9 @@ team members
 ---
 
 live demos video link
+gradio link 
+https://ffffdse-mini.hf.space/
+
 https://drive.google.com/file/d/1424XsC5sr9ogTGqLArs2wSZvw4TyRtnj/view?usp=sharing
 
 https://medium.com/@k230069/roi-of-training-an-llm-from-scratch-what-it-costs-and-where-fine-tuning-wins-c930b2fe1e29
