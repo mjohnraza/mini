@@ -18,6 +18,11 @@ pinned: false
 
 A complete, educational, and production-grade implementation of a miniature autoregressive causal Transformer language model (**MiniGPT**) built entirely from scratch using PyTorch primitives. No pretrained checkpoints (`AutoModelForCausalLM`, `GPT2LMHeadModel`) or black-box architectures are loaded.
 
+team members 
+
+23k0069 John
+23i2555 Zoha 
+23k00071  Urooj 
 ---
 
 live demos video link
