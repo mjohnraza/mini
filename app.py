@@ -4,6 +4,7 @@ Interactive text generation and model analysis demo.
 """
 
 import os
+import torch
 import gradio as gr
 
 try:
